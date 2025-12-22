@@ -2,22 +2,29 @@
 import { useListStore } from '@/stores/lists'
 import { RouterView, useRouter } from 'vue-router'
 import ListCard from '../components/ListCard.vue'
+import { onMounted } from 'vue'
 
 const router = useRouter()
 
 const listStore = useListStore()
 
+onMounted(() => {
+  listStore.fetchLists()
+})
+
 const handleCreateList = () => {
   const newList = listStore.createList()
 
   if (newList) {
-    router.push(`/list/${newList.id}`)
+    document.startViewTransition(() => router.push(`/list/${newList.id}`))
   }
 
   console.log('Crear nueva lista de comidas')
 }
 const handledCardClick = (listId: string) => {
-  router.push(`/list/${listId}`)
+  document.startViewTransition(() => {
+    router.push(`/list/${listId}`)
+  })
 }
 </script>
 

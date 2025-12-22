@@ -1,6 +1,17 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
+import { useListStore } from '@/stores/lists'
+
+const router = useRouter()
+const listStore = useListStore()
+
 const handleCreateList = () => {
+  const newList = listStore.createList()
+
+  if (newList) {
+    document.startViewTransition(() => router.push(`/list/${newList.id}`))
+  }
+
   console.log('Crear nueva lista de comidas')
 }
 </script>

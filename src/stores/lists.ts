@@ -4,6 +4,8 @@ import { defineStore } from 'pinia'
 
 export const useListStore = defineStore('list', () => {
   const lists = ref<List[]>([])
+  const loading = ref(false)
+  const error = ref<string | null>(null)
 
   const createList = (title = 'Unlisted list') => {
     const maxPosition = Math.max(0, ...lists.value.map((list) => list.position))
@@ -16,6 +18,19 @@ export const useListStore = defineStore('list', () => {
 
     lists.value.push(newList)
     return newList
+  }
+
+  const fetchLists = async () => {
+    loading.value = true
+    error.value = null
+    try {
+      const data = await getAllListsOrdered()
+      lists.value = data || []
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to fetch lists'
+    } finally {
+      loading.value = false
+    }
   }
 
   const fetchListsItem = (listId: string) => {
@@ -38,7 +53,10 @@ export const useListStore = defineStore('list', () => {
 
   return {
     lists,
+    loading,
+    error,
     createList,
+    fetchLists,
     fetchListsItem,
     updateList,
   }

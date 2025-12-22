@@ -3,6 +3,8 @@ import { useListStore } from '@/stores/lists'
 import { computed, onMounted, ref, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { List } from '@/types'
+import IconoCerrar from './icons/iconoCerrar.vue'
+import IconoPapelera from './icons/iconoPapelera.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,14 +18,6 @@ const title = ref('')
 const isEditingTitle = ref(false)
 const titleInput = ref<HTMLInputElement | null>(null)
 
-const saveTitle = async () => {
-  const newTitle = title.value.trim()
-
-  await listStore.updateList(listId.value, { title: newTitle })
-
-  isEditingTitle.value = false
-}
-
 const startEditingTitle = async () => {
   isEditingTitle.value = true
   await nextTick()
@@ -31,12 +25,25 @@ const startEditingTitle = async () => {
   titleInput.value?.select()
 }
 
+const saveTitle = async () => {
+  const newTitle = title.value.trim()
+
+  if (listId.value) {
+    await listStore.updateList(listId.value, { title: newTitle })
+  }
+
+  isEditingTitle.value = false
+}
+
 const handleTitleKeydown = () => {
   saveTitle()
 }
 
+const closeModal = () => {
+  document.startViewTransition(() => router.push('/'))
+}
 const handleBackdropClick = () => {
-  router.push('/')
+  closeModal()
 }
 
 onMounted(() => {
@@ -79,6 +86,16 @@ onMounted(() => {
           class="block flex-1 mr-4 text-2xl font-semibold bg-dark-hover text-white px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           type="text"
         />
+        <div>
+          <button @click="saveTitle"><IconoPapelera /></button>
+
+          <button
+            @click="closeModal"
+            class="p-2 text-gray-400 hover:text-white hover:bg-dark-hover rounded-lg transition-colors"
+          >
+            <IconoCerrar />
+          </button>
+        </div>
       </div>
     </div>
   </div>

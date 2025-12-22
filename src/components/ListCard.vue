@@ -18,6 +18,7 @@ const statusText = computed(() => 'x/total')
 <template>
   <button
     class="bg-dark-card border border-dark-border rounded-lg p-4 hover:bg-dark-hover cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-black/20"
+    :style="{ viewTransitionName: !isActive ? `card-${list.id}` : undefined }"
   >
     <h3 class="text-lg font-semibold text-white mb-2 truncate">
       {{ list.title }}
