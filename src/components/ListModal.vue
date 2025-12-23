@@ -5,6 +5,8 @@ import { useRoute, useRouter } from 'vue-router'
 import type { List } from '@/types'
 import IconoCerrar from './icons/iconoCerrar.vue'
 import IconoPapelera from './icons/iconoPapelera.vue'
+import IconoCrear from './icons/iconoCrear.vue'
+import ListItem from './listItem.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -12,6 +14,7 @@ const router = useRouter()
 const listId = computed(() => route.params.id as string | undefined)
 const list = ref<List>()
 const listStore = useListStore()
+const items = computed(() => listStore.getListItems(listId.value as string))
 
 //title
 const title = ref('')
@@ -45,12 +48,21 @@ const closeModal = () => {
 const handleBackdropClick = () => {
   closeModal()
 }
+const handleDeleteList = async () => {
+  if (window.confirm('¿Estás seguro de que deseas eliminar esta lista?')) {
+    await listStore.deleteList(listId.value as string)
+    closeModal()
+  }
+}
 
-onMounted(() => {
-  if (listId.value) {
-    const fetchedList = listStore.fetchListsItem(listId.value)
-    list.value = fetchedList
-    title.value = fetchedList?.title || ''
+const handleAddIitem = async () => {
+  await listStore.createListItem(listId.value as string, '')
+}
+onMounted(async () => {
+  const id = listId.value
+  if (typeof id === 'string' && id.length > 0) {
+    await listStore.fetchListItems(id)
+    title.value = list.value?.title || ''
   }
 })
 </script>
@@ -87,7 +99,14 @@ onMounted(() => {
           type="text"
         />
         <div>
-          <button @click="saveTitle"><IconoPapelera /></button>
+          <button
+            @click="handleDeleteList"
+            class="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+            type="button"
+          >
+            <span class="sr-only">Borrar</span>
+            <IconoPapelera />
+          </button>
 
           <button
             @click="closeModal"
@@ -97,6 +116,19 @@ onMounted(() => {
           </button>
         </div>
       </div>
+      <div class="flex-1 overflow-y-auto p-4" flex flex-col justify-between>
+        <div class="space-y-2">
+          <ListItem v-for="item in items" :key="item.id" :listId="listId" :item="item" />
+        </div>
+      </div>
+
+      <button
+        @click="handleAddIitem"
+        class="mt-4 w-full py-3 text-gray-400 hover:text-white hover:bg-dark-hover rounded-lg transition-colors flex items-center justify-center gap-2 border border-dashed border-gray-600 hover:border-gray-400"
+      >
+        <IconoCrear />
+        Nuevo palto
+      </button>
     </div>
   </div>
 </template>
