@@ -46,7 +46,7 @@ const handledCardClick = (listId: string) => {
           @click="handleCreateList"
           class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium"
         >
-          Añadir priemra comida
+          Añadir primera comida
         </button>
       </div>
     </main>

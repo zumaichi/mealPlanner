@@ -162,7 +162,7 @@ onMounted(async () => {
         class="mt-4 w-full py-3 text-gray-400 hover:text-white hover:bg-dark-hover rounded-lg transition-colors flex items-center justify-center gap-2 border border-dashed border-gray-600 hover:border-gray-400"
       >
         <IconoCrear />
-        Nuevo palto
+        Nuevo plato
       </button>
     </div>
   </div>
