@@ -15,11 +15,9 @@ onMounted(() => {
 const handleCreateList = async () => {
   const newList = await listStore.createList('Nueva planificación')
 
-
   if (newList) {
     document.startViewTransition(() => router.push(`/list/${newList.id}`))
   }
-
 }
 const handledCardClick = (listId: string) => {
   document.startViewTransition(() => {
