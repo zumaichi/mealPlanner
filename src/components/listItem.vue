@@ -1,16 +1,30 @@
 <script setup lang="ts">
 import { useListStore } from '@/stores/lists'
 import type { ListItem } from '@/types'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps<{
   item: ListItem
   listId: string
+  isDragging: boolean
+}>()
+const emit = defineEmits<{
+  dragstart: [item: ListItem]
+  dragenter: []
+  dragend: []
+  dragover: [e: DragEvent]
+  newItem: [newItem: string]
 }>()
 
 const isEditing = ref(false)
 const content = ref(props.item.content)
-const isDragging = ref(false)
+
+watch(
+  () => props.item.content,
+  (newContent) => {
+    content.value = newContent
+  },
+)
 
 const startEditing = () => {
   isEditing.value = true
@@ -39,6 +53,9 @@ const toggleChecked = async () => {
     isChecked: !props.item.isChecked,
   })
 }
+const deleteItem = async () => {
+  await useListStore().deleteListItem(props.item.id, props.listId)
+}
 </script>
 
 <template>
@@ -47,6 +64,11 @@ const toggleChecked = async () => {
       'flex items-center gap-3 p-3 bg-dark-hover rounded-lg border border-transparent hover:border-dark-border transition-all cursor-move group',
       { 'opacity-50': isDragging },
     ]"
+    :draggable="true"
+    @dragstart="emit('dragstart', item)"
+    @dragenter="emit('dragenter')"
+    @dragend="emit('dragend')"
+    @dragover="emit('dragover', $event)"
   >
     <button
       @click="toggleChecked"
@@ -89,5 +111,23 @@ const toggleChecked = async () => {
       class="block flex-1 mr-4 bg-dark-hover text-white px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
       placeholder="Introduce alimentos"
     />
+    <button
+      @click="deleteItem"
+      class="flex-shrink-0 p-1 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+    <div class="flex-shrink-0 text-gray-600 cursor-move">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+      </svg>
+    </div>
   </div>
 </template>

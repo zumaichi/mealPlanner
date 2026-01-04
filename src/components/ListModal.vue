@@ -2,7 +2,7 @@
 import { useListStore } from '@/stores/lists'
 import { computed, onMounted, ref, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { List } from '@/types'
+import type { List, ListItem as ListItemType } from '@/types'
 import IconoCerrar from './icons/iconoCerrar.vue'
 import IconoPapelera from './icons/iconoPapelera.vue'
 import IconoCrear from './icons/iconoCrear.vue'
@@ -19,7 +19,28 @@ const items = computed(() => listStore.getListItems(listId.value as string))
 //title
 const title = ref('')
 const isEditingTitle = ref(false)
-const titleInput = ref<HTMLInputElement | null>(null)
+const titleInput = ref<HTMLInputElement>()
+const draggedItem = ref<ListItemType | null>(null)
+
+const onDragStart = (item: ListItemType) => {
+  draggedItem.value = item
+}
+
+const onDragEnter = (item: ListItemType) => {
+  if (draggedItem.value === null || draggedItem.value.id === item.id) return
+
+  const reorderedItems = items.value.filter((i): i is ListItemType => i !== null && i !== undefined)
+  const fromIndex = reorderedItems.findIndex((i) => i.id === draggedItem.value!.id)
+  const toIndex = reorderedItems.findIndex((i) => i.id === item.id)
+
+  const movedItem = reorderedItems.splice(fromIndex, 1)[0]
+  reorderedItems.splice(toIndex, 0, movedItem)
+  listStore.reorderListItems(listId.value as string, reorderedItems)
+}
+
+const onDragEnd = () => {
+  draggedItem.value = null
+}
 
 const startEditingTitle = async () => {
   isEditingTitle.value = true
@@ -56,8 +77,9 @@ const handleDeleteList = async () => {
 }
 
 const handleAddIitem = async () => {
-  await listStore.createListItem(listId.value as string, '')
+  await listStore.createListItem(listId.value as string, '') //no consigo q esto salga por defecto
 }
+
 onMounted(async () => {
   const id = listId.value
   if (typeof id === 'string' && id.length > 0) {
@@ -107,7 +129,6 @@ onMounted(async () => {
             <span class="sr-only">Borrar</span>
             <IconoPapelera />
           </button>
-
           <button
             @click="closeModal"
             class="p-2 text-gray-400 hover:text-white hover:bg-dark-hover rounded-lg transition-colors"
@@ -116,9 +137,22 @@ onMounted(async () => {
           </button>
         </div>
       </div>
+
       <div class="flex-1 overflow-y-auto p-4" flex flex-col justify-between>
         <div class="space-y-2">
-          <ListItem v-for="item in items" :key="item.id" :listId="listId" :item="item" />
+          <TransitionGroup name="list">
+            <ListItem
+              v-for="item in items"
+              :key="item.id"
+              :listId="listId"
+              :item="item"
+              :is-dragging="draggedItem?.id === item.id"
+              @dragstart="onDragStart(item)"
+              @dragenter="onDragEnter(item)"
+              @dragend="onDragEnd"
+              @dragover.prevent
+            />
+          </TransitionGroup>
         </div>
       </div>
 
@@ -132,3 +166,21 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+</style>

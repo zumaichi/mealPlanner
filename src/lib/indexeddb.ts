@@ -46,27 +46,40 @@ function tx<T>(
   })
 }
 
-export async function getAllListsOrdered(): Promise<any[]> {
+export async function getAllListsOrdered(): Promise<List[]> {
   const db = await openDatabase()
   return new Promise((resolve, reject) => {
     const t = db.transaction(STORE_LISTS, 'readonly')
     const s = t.objectStore(STORE_LISTS)
     const req = s.getAll()
     req.onsuccess = () => {
-      const data = (req.result || []).sort((a: any, b: any) => a.position - b.position)
+      const data = (req.result || []).sort((a: List, b: List) => a.position - b.position)
       resolve(data)
     }
     req.onerror = () => reject(req.error)
   })
 }
 
-export async function putList(list: any): Promise<any> {
+export interface List {
+  id: string
+  position: number
+  [key: string]: unknown
+}
+
+export interface ListItem {
+  id: string
+  listId: string
+  position: number
+  [key: string]: unknown
+}
+
+export async function putList(list: List): Promise<List> {
   const db = await openDatabase()
   await tx(db, STORE_LISTS, 'readwrite', (s) => s.put(list))
   return list
 }
 
-export async function updateListById(id: string, updates: any): Promise<any | null> {
+export async function updateListById(id: string, updates: Partial<List>): Promise<List | null> {
   const db = await openDatabase()
   return new Promise((resolve, reject) => {
     const t = db.transaction(STORE_LISTS, 'readwrite')
@@ -88,7 +101,7 @@ export async function deleteListById(id: string): Promise<void> {
   await tx(db, STORE_LISTS, 'readwrite', (s) => s.delete(id))
 }
 
-export async function getItemsByListOrdered(listId: string): Promise<any[]> {
+export async function getItemsByListOrdered(listId: string): Promise<ListItem[]> {
   const db = await openDatabase()
   return new Promise((resolve, reject) => {
     const t = db.transaction(STORE_ITEMS, 'readonly')
@@ -97,21 +110,24 @@ export async function getItemsByListOrdered(listId: string): Promise<any[]> {
     req.onsuccess = () => {
       const all = req.result || []
       const data = all
-        .filter((i: any) => i.listId === listId)
-        .sort((a: any, b: any) => a.position - b.position)
+        .filter((i: ListItem) => i.listId === listId)
+        .sort((a: ListItem, b: ListItem) => a.position - b.position)
       resolve(data)
     }
     req.onerror = () => reject(req.error)
   })
 }
 
-export async function putItem(item: any): Promise<any> {
+export async function putItem(item: ListItem): Promise<ListItem> {
   const db = await openDatabase()
   await tx(db, STORE_ITEMS, 'readwrite', (s) => s.put(item))
   return item
 }
 
-export async function updateItemById(id: string, updates: any): Promise<any | null> {
+export async function updateItemById(
+  id: string,
+  updates: Partial<ListItem>,
+): Promise<ListItem | null> {
   const db = await openDatabase()
   return new Promise((resolve, reject) => {
     const t = db.transaction(STORE_ITEMS, 'readwrite')
@@ -142,7 +158,7 @@ export async function deleteItemsByList(listId: string): Promise<void> {
     cursorReq.onsuccess = () => {
       const cursor = cursorReq.result as IDBCursorWithValue | null
       if (!cursor) return
-      const value: any = cursor.value
+      const value = cursor.value as ListItem
       if (value && value.listId === listId) {
         cursor.delete()
       }

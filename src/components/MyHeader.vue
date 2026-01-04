@@ -5,8 +5,8 @@ import { useListStore } from '@/stores/lists'
 const router = useRouter()
 const listStore = useListStore()
 
-const handleCreateList = () => {
-  const newList = listStore.createList()
+const handleCreateList = async () => {
+  const newList = await listStore.createList()
 
   if (newList) {
     document.startViewTransition(() => router.push(`/list/${newList.id}`))

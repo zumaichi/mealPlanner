@@ -2,6 +2,7 @@
 import type { List } from '@/types'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useListStore } from '@/stores/lists'
 
 const props = defineProps<{
   list: List
@@ -10,9 +11,38 @@ const props = defineProps<{
 const route = useRoute()
 const isActive = computed(() => route.name === 'list' && route.params.id === props.list.id)
 
-const previewText = computed(() => '')
+const listStore = useListStore()
+const items = computed(() => listStore.getListItems(props.list.id))
+const previewText = computed(() => {
+  const totalCount = items.value.length
 
-const statusText = computed(() => 'x/total')
+  if (totalCount === 0) {
+    return 'Lista vacía'
+  }
+
+  const firstItem = items.value.slice(0, 3)
+  const preview = firstItem
+    .map((item) => {
+      const icon = item.isChecked ? '✔️ ' : '• '
+      const text = item.content
+      return icon + text
+    })
+
+    .join('\n')
+
+  return preview + items.value.length
+})
+
+const statusText = computed(() => {
+  const checkedCount = items.value.filter((item) => item.isChecked).length
+  const totalCount = items.value.length
+
+  if (totalCount === 0) return ''
+  if (checkedCount === totalCount) return 'objetivo cumplido'
+  if (checkedCount === 0) return `${totalCount} pendiente(s)`
+
+  return `${checkedCount}/${totalCount} completado(s)`
+})
 </script>
 
 <template>
