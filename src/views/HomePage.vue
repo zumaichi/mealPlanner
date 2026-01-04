@@ -12,14 +12,14 @@ onMounted(() => {
   listStore.fetchLists()
 })
 
-const handleCreateList = () => {
-  const newList = listStore.createList()
+const handleCreateList = async () => {
+  const newList = await listStore.createList('Nueva planificación')
+
 
   if (newList) {
     document.startViewTransition(() => router.push(`/list/${newList.id}`))
   }
 
-  console.log('Crear nueva lista de comidas')
 }
 const handledCardClick = (listId: string) => {
   document.startViewTransition(() => {

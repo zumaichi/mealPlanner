@@ -34,7 +34,7 @@ const onDragEnter = (item: ListItemType) => {
   const toIndex = reorderedItems.findIndex((i) => i.id === item.id)
 
   const movedItem = reorderedItems.splice(fromIndex, 1)[0]
-  reorderedItems.splice(toIndex, 0, movedItem)
+  reorderedItems.splice(toIndex, 0, movedItem) //nose que hacer coin esto
   listStore.reorderListItems(listId.value as string, reorderedItems)
 }
 
@@ -107,7 +107,7 @@ onMounted(async () => {
             @click="startEditingTitle"
             class="block text-2xl font-semibold text-white cursor-pointer hover:text-gray-300 transition-colors empty:bg-dark-bg border-none text-left p-0 m-0 w-full empty:rounded-lg empty:h-[44px]"
           >
-            {{ title }}
+            {{ title || 'nueva planificacion' }}
           </button>
         </div>
         <input
@@ -119,6 +119,7 @@ onMounted(async () => {
           @keydown.enter="handleTitleKeydown"
           class="block flex-1 mr-4 text-2xl font-semibold bg-dark-hover text-white px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           type="text"
+          placeholder="nueva planificacion"
         />
         <div>
           <button
