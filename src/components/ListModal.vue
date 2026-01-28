@@ -7,13 +7,17 @@ import IconoCerrar from './icons/iconoCerrar.vue'
 import IconoPapelera from './icons/iconoPapelera.vue'
 import IconoCrear from './icons/iconoCrear.vue'
 import ListItem from './listItem.vue'
+import { createPinia } from 'pinia'
+import piniaPluginPersistatedstate from 'pinia-plugin-persistedstate'
 
 const route = useRoute()
 const router = useRouter()
 //list y store
 const listId = computed(() => route.params.id as string | undefined)
 const list = ref<List>()
-const listStore = useListStore()
+const pinia = createPinia()
+pinia.use(piniaPluginPersistatedstate)
+const listStore = useListStore(pinia)
 const items = computed(() => listStore.getListItems(listId.value as string))
 
 //title
@@ -34,8 +38,10 @@ const onDragEnter = (item: ListItemType) => {
   const toIndex = reorderedItems.findIndex((i) => i.id === item.id)
 
   const movedItem = reorderedItems.splice(fromIndex, 1)[0]
-  reorderedItems.splice(toIndex, 0, movedItem) //nose que hacer coin esto
-  listStore.reorderListItems(listId.value as string, reorderedItems)
+  if (movedItem) {
+    reorderedItems.splice(toIndex, 0, movedItem)
+    listStore.reorderListItems(listId.value as string, reorderedItems)
+  }
 }
 
 const onDragEnd = () => {
